@@ -1,12 +1,12 @@
 from re import compile
 from typing import TYPE_CHECKING
-
+from httpx import get, head
 from ..custom import BLANK_HEADERS
 from ..custom import wait
 from ..tools import Retry, DownloaderError, capture_error_request
 
 if TYPE_CHECKING:
-    from httpx import AsyncClient, get, head
+    from httpx import AsyncClient
 
     from ..config import Parameter
 
