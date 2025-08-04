@@ -144,10 +144,29 @@ class TikTokDownloader:
 
     async def server(self):
         try:
+            # 询问用户输入端口号
+            port_input = self.console.input(
+                _("请输入 Web API 服务端口号 (1-65535，直接回车使用默认 5555): ")
+            ).strip()
+            
+            # 验证并设置端口号
+            if port_input:
+                try:
+                    custom_port = int(port_input)
+                    if 1 <= custom_port <= 65535:
+                        server_port = custom_port
+                    else:
+                        self.console.warning(_("端口号超出有效范围 (1-65535)，使用默认端口 5555"))
+                        server_port = SERVER_PORT
+                except ValueError:
+                    self.console.warning(_("端口号格式无效，使用默认端口 5555"))
+                    server_port = SERVER_PORT
+            else:
+                server_port = SERVER_PORT
             self.console.print(
                 _(
-                    "访问 http://127.0.0.1:5555/docs 或者 http://127.0.0.1:5555/redoc 可以查阅 API 模式说明文档！"
-                ),
+                    "访问 http://127.0.0.1:{port}/docs 或者 http://127.0.0.1:{port}/redoc 可以查阅 API 模式说明文档！"
+                ).format(port=server_port),
                 highlight=True,
             )
             await APIServer(
@@ -155,7 +174,7 @@ class TikTokDownloader:
                 self.database,
             ).run_server(
                 SERVER_HOST,
-                SERVER_PORT,
+                server_port,
             )
         except KeyboardInterrupt:
             self.running = False
@@ -221,9 +240,6 @@ class TikTokDownloader:
             f"{self.LINE}\n\n\n{self.NAME.center(self.WIDTH)}\n\n\n{self.LINE}\n",
             style=MASTER,
         )
-        self.console.print(_("项目地址: {}").format(REPOSITORY), style=MASTER)
-        self.console.print(_("项目文档: {}").format(DOCUMENTATION_URL), style=MASTER)
-        self.console.print(_("开源许可: {}\n").format(LICENCE), style=MASTER)
 
     def check_config(self):
         self.recorder = DownloadRecorder(
